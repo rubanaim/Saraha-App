@@ -11,4 +11,6 @@ authRoute.post('/login', authController.login);
 authRoute.post('/send-otp', authController.sendOTP);
 authRoute.post('/reset-password', idempotency(), authController.resetPassword);
 authRoute.post('/login-with-google', authController.loginWithGoogle);
+authRoute.patch('/enable-2-step-verification', authController.enableTwoStepVerification);
+authRoute.post('/verify-to-login', authController.verifyToLogin);
 export default authRoute;

@@ -42,7 +42,6 @@ const userSchema = new Schema(
             enum: ['local','google','facebook','instagram'],
             default: 'local'
         },
-        profilePic : String,
         isVerified : {
             type: Boolean,
             default :false
@@ -51,6 +50,19 @@ const userSchema = new Schema(
             type: Boolean,
             default: false
         },
+        dob: Date,
+        gender: {
+            type: String,
+            enum: ['male', 'female'],
+            default: 'male'
+        },
+        profilePicPath : String,
+        coverImagePaths: [String],
+        cvPath: String,
+        twoStepVerification:{
+            type: Boolean,
+            default: false
+        }
     },
 {
     timestamps: true ,// set createdAt and updatedAt

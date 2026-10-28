@@ -35,9 +35,15 @@ export async function login(req, res,next){
     try{
         const data = validateBody(loginDTO, req.body);
         const {email,password} = data;
-        const token = await authService.login(email, password);
+        const tokens = await authService.login(email, password);
+        if(!tokens){
+            return res.json({
+                message:"check your inbox, we sent OTP",
+                success : true
+            })
+        }
         //This is an Express method used to send a cookie from the server to the browser.
-        res.cookie('access_token', token, {
+        res.cookie('access_token', tokens, {
             httpOnly: true, //set or modify   -> access within request
             maxAge: toMs(1,'hours'),
             //Only send this cookie to the refresh-token endpoint (and paths under that path).
@@ -53,6 +59,22 @@ export async function login(req, res,next){
     }
 }
 
+export async function verifyToLogin(req,res,next){
+    try{
+        const {email, code} = req.body;
+        const token = await authService.verifyCodeToLogin(email,code)
+        res.cookie('access_token',token,{
+            httpOnly: true,
+            maxAge: toMs(1,'hours'),
+        });
+        res.json({
+            message : "login successfully", success: true
+        })
+    }catch(err){
+        next(err);
+    }
+}
+
 export async function sendOTP(req,res,next){
     try{
         const data = validateBody(sendDTO, req.body);
@@ -65,6 +87,16 @@ export async function sendOTP(req,res,next){
     }catch(err){
         next(err);
     }
+}
+
+export async function enableTwoStepVerification(req,res,next){
+ try{
+     const {email,code} = req.body;
+     await authService.enableTwoStepVerification(email,code);
+     res.json({message:"enable Two Step Verification successfully", success:true});
+ }catch(err){
+     next(err);
+ }
 }
 
 export async function resetPassword(req,res,next){

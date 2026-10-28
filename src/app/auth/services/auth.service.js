@@ -4,7 +4,7 @@ import * as useRepository from '../../user/repositories/user.repository.js'
 import bcrypt from 'bcrypt';
 import crypto from "node:crypto";
 import jwt from 'jsonwebtoken';
-import {toMs} from "../../../pkg/utils/time.js";
+import {toMs,toSeconds} from "../../../pkg/utils/time.js";
 import {sendEmail} from "../../../lib/email/nodemailer.js";
 import {senOtpTemplate, verifyAccountTemplate} from "../template/send-email.js";
 import {generateOtp} from "../../../lib/utils/otp.js";
@@ -14,6 +14,7 @@ import {logger} from '../../../pkg/logger/logger.js'
 import {generateToken} from "../utils/token.js";
 import{ hashPassword, comparePassword} from '../utils/hash.js'
 import {verifyGoogleToken} from "../../../lib/utils/google-auth.js";
+import {cacheProvider} from '../../../lib/cache/init.js';
 
 
 export async function register(userData){
@@ -41,6 +42,26 @@ export async function register(userData){
     return createdUser;
 }
 
+export async function verifyCodeToLogin(email,code){
+    //1. check user existence
+    const user = await authRepository.checkUserExistByEmail(email);
+    if(!user) userNotExists;
+    if(user.isVerified === true) userAlreadyVerified;
+    //2. check otp expires or not
+    const otp = await cacheProvider.get(`otp:${email}`);
+    if(!otp) otpExpired;
+    //3. check valid otp
+    if(otp.code !== code) invalidCode;
+    //5. delete otp from DB
+    await otpRepository.deleteOtp(email);
+
+    const token = await generateToken({id:user._id, name : user.name});
+
+    //6. return token
+    return token;
+
+}
+
 export async function verifyAccount(email,code){
     //1. check user existence
     const user = await authRepository.checkUserExistByEmail(email);
@@ -52,7 +73,25 @@ export async function verifyAccount(email,code){
     //3. check valid otp
     if(otp.code !== code) invalidCode;
     //4. update account set isVerified = true
-   const updatedUser= await useRepository.updateUserByEmail(email,{isVerified:true});
+    const updatedUser= await useRepository.updateUserByEmail(email,{isVerified:true});
+    //5. delete otp from DB
+    await otpRepository.deleteOtp(email);
+    //6. return updatedUser
+    return updatedUser;
+
+}
+
+export async function enableTwoStepVerification(email,code){
+    //1. check user existence
+    const user = await authRepository.checkUserExistByEmail(email);
+    if(!user) userNotExists;
+    //2. check otp expires or not
+    const otp = await otpRepository.getOtpByEmail(email);
+    if(!otp) otpExpired;
+    //3. check valid otp
+    if(otp.code !== code) invalidCode;
+    //4. update account set isVerified = true
+    const updatedUser= await useRepository.updateUserByEmail(email,{twoStepVerification:true});
     //5. delete otp from DB
     await otpRepository.deleteOtp(email);
     //6. return updatedUser
@@ -68,6 +107,14 @@ export async function login(email,password) {
     //2. check password
     const match = await comparePassword(password, user.password);
     if(!match) invalidPassword;
+
+    if(user.twoStepVerification){
+        const code = generateOtp();
+        cacheProvider.set(`otp:${email}`, code, toSeconds(3,'minutes'));
+        await sendEmail(email, 'Two Step Verification email code', `<h3>Your OTP Code To Login is ${code}</h3>`);
+        return;
+    }
+
     //3. generate token
    const token= generateToken({id: user._id, name : user.name });
    //return token
