@@ -2,6 +2,7 @@ import * as authService from '../services/auth.service.js';
 import {toMs} from "../../../pkg/utils/time.js";
 import {validateBody} from "../../../lib/validation/validation.js";
 import {registerDTO,loginDTO,verifyAccountDTO,sendDTO,resetPasswordDTO} from "../dto/auth.dto.js";
+import {setCookies} from '../utils/cookies.js';
 export async function register(req,res,next){
     try{
         const data = validateBody(registerDTO, req.body)
@@ -12,6 +13,40 @@ export async function register(req,res,next){
             data: createdUser
         });
     }catch(err){
+        next(err);
+    }
+}
+
+export async function refreshToken(req, res, next) {
+    try {
+        const refreshToken = req.cookies?.refresh_token;
+        if (!refreshToken) {
+            return res.status(401).json({
+                message: 'Refresh token is missing, you have to login',
+                success: false
+            });
+        }
+        const accessToken =
+            await authService.refreshToken(refreshToken);
+
+        setCookies(res,accessToken,refreshToken);
+
+        return res.json({
+            message: 'Access token refreshed successfully',
+            success: true
+        });
+    } catch (err) {
+        if (
+            err.name === 'JsonWebTokenError' ||
+            err.name === 'TokenExpiredError' ||
+            err.message === 'Invalid refresh token'
+        ) {
+            return res.status(401).json({
+                message: 'Invalid or expired refresh token',
+                success: false
+            });
+        }
+
         next(err);
     }
 }
@@ -42,13 +77,7 @@ export async function login(req, res,next){
                 success : true
             })
         }
-        //This is an Express method used to send a cookie from the server to the browser.
-        res.cookie('access_token', tokens, {
-            httpOnly: true, //set or modify   -> access within request
-            maxAge: toMs(1,'hours'),
-            //Only send this cookie to the refresh-token endpoint (and paths under that path).
-            // path: '/auth/refresh_token',
-        });
+        setCookies(res,tokens.accessToken,tokens.refreshToken);
         res.json({
             message: "user login successfully",
             success: true,
@@ -62,11 +91,8 @@ export async function login(req, res,next){
 export async function verifyToLogin(req,res,next){
     try{
         const {email, code} = req.body;
-        const token = await authService.verifyCodeToLogin(email,code)
-        res.cookie('access_token',token,{
-            httpOnly: true,
-            maxAge: toMs(1,'hours'),
-        });
+        const tokens = await authService.verifyCodeToLogin(email,code);
+        setCookies(res,tokens.accessToken,tokens.refreshToken);
         res.json({
             message : "login successfully", success: true
         })
@@ -117,11 +143,8 @@ export async function resetPassword(req,res,next){
 
 export async function loginWithGoogle(req,res,next){
     try{
-        const token = await authService.loginWithGoogle(req.body.idToken);
-        res.cookie('access_token', token, {
-            httpOnly:true,
-            maxAge: toMs(1, 'hours'),
-        });
+        const tokens = await authService.loginWithGoogle(req.body.idToken);
+        setCookies(res,tokens.accessToken,tokens.refreshToken);
         res.json({message: "user login successfully", success: true});
     }catch(err){
         next(err);

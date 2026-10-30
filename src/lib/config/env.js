@@ -13,6 +13,7 @@ const schema = z.object({
     SMTP_USER : z.string().trim().toLowerCase(),
     SMTP_PASS : z.string(),
     SECRET_KEY : z.string(),
+    REFRESH_SECRET_KEY : z.string(),
     GOOGLE_WEB_AUTH_CLIENT_ID : z.string(),
 
     //using default a lot make silence error
@@ -43,7 +44,8 @@ export const env = {
         password : parsed.SMTP_PASS,
    },
     jwt : {
-        secret: parsed.SECRET_KEY
+        secret: parsed.SECRET_KEY,
+        refreshSecret : parsed.REFRESH_SECRET_KEY
     },
     payments: {},
     aws:{}

@@ -13,4 +13,6 @@ authRoute.post('/reset-password', idempotency(), authController.resetPassword);
 authRoute.post('/login-with-google', authController.loginWithGoogle);
 authRoute.patch('/enable-2-step-verification', authController.enableTwoStepVerification);
 authRoute.post('/verify-to-login', authController.verifyToLogin);
+authRoute.post('/refresh-token',authController.refreshToken);
+
 export default authRoute;
