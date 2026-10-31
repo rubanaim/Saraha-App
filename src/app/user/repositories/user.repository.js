@@ -13,3 +13,7 @@ export async function findUSerById(id){
     return User.findOne({_id:id, isDeleted: false}, {password: 0}, {});
     // return user.findById(id);
 }
+export async function getUserByEmail(email){
+    return User.findOne({email:email, isDeleted: false}, {password: 0}, {});
+    // return user.findById(id);
+}

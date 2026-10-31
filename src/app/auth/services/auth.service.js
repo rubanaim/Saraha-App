@@ -140,10 +140,43 @@ export async function login(email,password) {
     const user = await authRepository.checkUserExistByEmail(email);
     if(!user) userNotExists;
     if(user.isVerified === false) userNotVerified;
+    if (user.isBanned) {
+        throw new Error('Your account has been banned');
+    }
+    const now = new Date();
+    if (user.lockUntil && user.lockUntil > now) {
+        throw new Error('Account temporarily locked');
+    }
+
     //2. check password
     const match = await comparePassword(password, user.password);
-    if(!match) invalidPassword;
+    if (!match) {
+        // Check whether the previous attempts are still
+        // within the 3-minute window
+        if (
+            !user.firstFailedLoginAt ||
+            now - user.firstFailedLoginAt > toMs(3, 'minutes')
+        ) {
+            user.failedLoginAttempts = 0;
+            user.firstFailedLoginAt = now;
+        }
 
+        user.failedLoginAttempts += 1;
+
+        if (user.failedLoginAttempts >= 5) {
+            user.lockUntil = new Date(now.getTime() + toMs(3, 'minutes'));
+        }
+
+        await user.save();
+
+        throw invalidPassword;
+    }
+
+// Reset failed attempts after successful login
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    user.firstFailedLoginAt = null;
+    await user.save();
     if(user.twoStepVerification){
         const code = generateOtp();
         cacheProvider.set(`otp:${email}`, code, toSeconds(3,'minutes'));
@@ -205,8 +238,8 @@ export async function sendOtp(email){
 export async function resetPassword(email, code,newPassword){
     //1. verify otp code
     const otp = otpRepository.getOtpByEmail(email) //{} / null
-    if(!otp) otpExpired;
-    if(otp.code !== code) invalidCode;
+    if(!otp) throw otpExpired;
+    if(otp.code !== code) throw invalidCode;
     //2. hash password
     const hashedPassword = await hashPassword(newPassword);
     //3. update your password

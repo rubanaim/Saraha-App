@@ -26,4 +26,12 @@ import Redis from 'ioredis';
      async del(key){
        return this.client.del(key);
      }
+     // Increment a key's value by 1
+     async incr(key) {
+         return this.client.incr(key);
+     }
+     // Set expiration time for a key
+     async expire(key, seconds) {
+         return this.client.expire(key, seconds);
+     }
  }

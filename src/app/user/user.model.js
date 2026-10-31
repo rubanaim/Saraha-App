@@ -62,6 +62,22 @@ const userSchema = new Schema(
         twoStepVerification:{
             type: Boolean,
             default: false
+        },
+        isBanned: {
+            type: Boolean,
+            default: false
+        },
+        failedLoginAttempts: {
+            type: Number,
+            default: 0
+        },
+        lockUntil: {
+            type: Date,
+            default: null
+        },
+        firstFailedLoginAt: {
+            type: Date,
+            default: null
         }
     },
 {
