@@ -44,3 +44,27 @@ export async function getAllRequests(req, res, next) {
         next(error);
     }
 }
+
+export async function handleRequest(req, res, next) {
+    try {
+        const { requestId } = req.params;
+        const { decision } = req.body;
+
+        const receiverOfReq = req.user.sub;
+
+        const updatedRequest = await requestService.handleRequest(
+            requestId,
+            receiverOfReq,
+            decision
+        );
+
+        res.status(200).json({
+            message: `Request ${decision} successfully`,
+            success: true,
+            data: updatedRequest
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}

@@ -24,7 +24,7 @@ const schema = new Schema({
 },
     {timestamps: true});
 schema.index({ originalMessage: 1 }, { unique: true });
-export const Conversation = model('Conversation', schema);
+export const ConversationModel = model('Conversation', schema);
 
 // o vs o model
 /*{

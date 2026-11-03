@@ -13,10 +13,6 @@ const messageSchema = new Schema({
         ref: "User",
         required: true,
     },
-    sender: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-    },
     isDeleted: {
         type: Boolean,
         default: false

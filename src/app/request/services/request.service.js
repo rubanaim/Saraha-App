@@ -1,5 +1,5 @@
 import * as messageRepository from "../../message/repositories/message.repository.js";
-import * as requestRepository from "../repositories/request.repository.js";
+import * as requestRepository from "../../request/repositories/request.repository.js";
 
 import { AppError } from "../../../lib/error/error.js";
 
@@ -45,3 +45,4 @@ export async function getAllRequests(receiverOfReq) {
 
     return requests;
 }
+

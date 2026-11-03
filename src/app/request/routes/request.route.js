@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import * as requestController from "../controllers/request.controller.js";
+import * as requestController from "../../request/controllers/request.controller.js";
 
 import { authGuard } from "../../../lib/auth/authGuard.js";
 
