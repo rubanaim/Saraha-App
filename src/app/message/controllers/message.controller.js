@@ -7,7 +7,7 @@ export async function sendMessage(req,res,next){
         //validate data
         const data = validateBody(sendMessageDTO, req.body);
         const {content,receiver } = data;
-        const sender = req.user?.id; //? may {} || null
+        const sender = req.user.sub; //? may {} || null
        const createdMessage= await messageService.sendMessage(content, receiver, sender);
        res.status(201).json({
            message: 'Message Send Successfully',

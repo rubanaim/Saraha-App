@@ -6,12 +6,19 @@ export async function sendMessage (content, receiver,sender ){
     //1. check receiver exists
      const user = await userRepository.findUSerById(receiver);
      if(!user) throw userNotExists;
-    //2. save message into db
-     return await messageRepository.createMessage(content,receiver,sender);
+    //save message into db
+     // 2. Create anonymous message
+     return await messageRepository.createMessage(
+         content,
+         receiver,
+         sender,
+         "anonymous"
+     );
+
 }
 
 export async function getAllMessages(userId){
-     const messages = messageRepository.getAllMessages(userId);
+     const messages = await messageRepository.getAllMessages(userId);
      if(messages.length === 0) throw new AppError('No messages found',404);
      return messages;
 }

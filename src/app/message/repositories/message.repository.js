@@ -10,11 +10,13 @@ export async function createMessage(content, receiver,sender){
 
 export async function getAllMessages(userId){
     return Message.find({
+        receiver: userId,
+        type: "anonymous",
+        isDeleted: false
+        //It tells MongoDB/Mongoose not to return the sender field.
+    }).select("-sender");
+}
 
-           receiver: userId
-       },
-       {},
-       {
-           populate: {path: "sender", select: "name"} }
-    );
+export async function findMessageById(messageId) {
+    return Message.findById(messageId);
 }

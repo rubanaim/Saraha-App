@@ -21,11 +21,19 @@ const messageSchema = new Schema({
         type: Boolean,
         default: false
     },
-
+    type: {
+            type: String,
+            enum: ['anonymous', 'conversation'],
+            default: 'anonymous'
+        },
+    conversation: {
+            type: Schema.Types.ObjectId,
+            ref: "Conversation",
+        },
 },
     {
         timestamps: true
     }
-    )
+    );
 //model
 export const Message = model('Message', messageSchema);
