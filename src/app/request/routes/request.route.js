@@ -12,6 +12,10 @@ requestRouter.post(
     requestController.requestIdentity
 );
 requestRouter.get("/", authGuard, requestController.getAllRequests);
-
+requestRouter.patch(
+    "/:requestId/decision",
+    authGuard,
+    requestController.handleRequest
+);
 
 export default requestRouter;

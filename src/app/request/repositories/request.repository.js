@@ -1,4 +1,4 @@
-import { RequestModel } from "../models/request.model.js";
+import { RequestModel } from "../models/request.model.js ";
 
 export async function createRequest(data) {
     return RequestModel.create(data);
