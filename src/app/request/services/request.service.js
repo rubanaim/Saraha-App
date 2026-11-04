@@ -71,7 +71,7 @@ export async function handleRequest(requestId, receiverOfReq, decision) {
     }
 
     // 5. If accepted, create a conversation
-    if (decision === "accepted") {
+    if (decision === "accept") {
         await conversationRepository.createConversation({
             participants: [
                 request.senderOfReq,

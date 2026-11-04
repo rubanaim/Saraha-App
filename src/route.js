@@ -3,9 +3,11 @@ import authRouter from  "./app/auth/auth.route.js";
 import userRouter from  "./app/user/user.route.js";
 import messageRouter from  "./app/message/routers/message.route.js";
 import requestRouter from "./app/request/routes/request.route.js";
+import conversationRouter from "./app/conversation/routes/conversation.route.js"
 export const router = Router();
 
 router.use('/auth',authRouter);
 router.use('/user', userRouter);
 router.use('/message', messageRouter);
 router.use('/request', requestRouter);
+router.use("/conversation", conversationRouter);

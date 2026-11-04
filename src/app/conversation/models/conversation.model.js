@@ -20,7 +20,7 @@ const schema = new Schema({
             ref: "Message",
             required: true,
         },
-    message : [messageSchema]
+    messages : [messageSchema]
 },
     {timestamps: true});
 schema.index({ originalMessage: 1 }, { unique: true });
